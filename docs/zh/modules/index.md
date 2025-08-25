@@ -1,6 +1,6 @@
 <Redirect to="modules_main" />
 
-# Modules
+# 模块
 
-This is a placholder for modules docs.
-Built but not in sidebar.
+这是模块文档的占位符。
+已构建但不在侧边栏中。

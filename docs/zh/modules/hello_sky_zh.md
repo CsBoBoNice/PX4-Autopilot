@@ -1,1 +1,544 @@
-# 第一个应用程序教程 (Hello Sky)\n\n本主题解释了如何创建和运行您的第一个机载应用程序。\n它涵盖了在 PX4 上进行应用开发所需的所有基本概念和 API。\n\n::: info\n为简单起见，省略了更高级的功能，如启动/停止功能和命令行参数。\n这些内容在 [应用程序/模块模板](../modules/module_template.md) 中有介绍。\n:::\n\n## 先决条件\n\n您需要以下内容：\n\n- [PX4 SITL 模拟器](../simulation/index.md) _或_ 一个 [与 PX4 兼容的飞控](../flight_controller/index.md)。\n- 用于目标平台的 [PX4 开发工具链](../dev_setup/dev_env.md)。\n- 从 Github [下载 PX4 源代码](../dev_setup/building_px4.md#download-the-px4-source-code)\n\n源代码 [PX4-Autopilot/src/examples/px4_simple_app](https://github.com/PX4/PX4-Autopilot/tree/main/src/examples/px4_simple_app) 目录包含了一个已完成的本教程版本，如果您遇到困难可以参考。\n\n## 最小应用程序\n\n在本节中，我们将创建一个只打印 `Hello Sky!` 的 _最小应用程序_。\n这包括一个 _C_ 文件和一个 _cmake_ 定义（告诉工具链如何构建应用程序）。\n\n1. 创建一个新目录 **PX4-Autopilot/src/examples/px4_simple_app**。\n1. 在该目录中创建一个名为 **px4_simple_app.c** 的新 C 文件：\n   - 将默认头部复制到页面顶部。\n     这应该存在于所有贡献的文件中！\n\n     ```c\n     /****************************************************************************\n      *\n      *   Copyright (c) 2012-2022 PX4 Development Team. All rights reserved.\n      *\n      * Redistribution and use in source and binary forms, with or without\n      * modification, are permitted provided that the following conditions\n      * are met:\n      *\n      * 1. Redistributions of source code must retain the above copyright\n      *    notice, this list of conditions and the following disclaimer.\n      * 2. Redistributions in binary form must reproduce the above copyright\n      *    notice, this list of conditions and the following disclaimer in\n      *    the documentation and/or other materials provided with the\n      *    distribution.\n      * 3. Neither the name PX4 nor the names of its contributors may be\n      *    used to endorse or promote products derived from this software\n      *    without specific prior written permission.\n      *\n      * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n      * \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n      * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS\n      * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE\n      * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,\n      * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,\n      * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS\n      * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED\n      * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n      * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN\n      * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n      * POSSIBILITY OF SUCH DAMAGE.\n      *\n      ****************************************************************************/\n     ```\n\n   - 将以下代码复制到默认头部下方。\n     这应该存在于所有贡献的文件中！\n\n     ```c\n     /**\n      * @file px4_simple_app.c\n      * Minimal application example for PX4 autopilot\n      *\n      * @author Example User <mail@example.com>\n      */\n\n     #include <px4_platform_common/log.h>\n\n     __EXPORT int px4_simple_app_main(int argc, char *argv[]);\n\n     int px4_simple_app_main(int argc, char *argv[])\n     {\n     	PX4_INFO(\"Hello Sky!\");\n     	return OK;\n     }\n     ```\n\n     :::tip\n     主函数必须命名为 `<module_name>_main` 并从模块中导出，如图所示。\n     :::\n\n     :::tip\n     `PX4_INFO` 是 PX4 shell 中 `printf` 的等价物（包含在 **px4_platform_common/log.h** 中）。\n     有不同的日志级别：`PX4_INFO`、`PX4_WARN`、`PX4_ERR`、`PX4_DEBUG`。\n     警告和错误会额外添加到 [ULog](../dev_log/ulog_file_format.md) 中并在 [Flight Review](https://logs.px4.io/) 上显示。\n     :::\n\n1. 创建并打开一个名为 **CMakeLists.txt** 的新 _cmake_ 定义文件。\n   将以下文本复制进去：\n\n   ```cmake\n   ############################################################################\n   #\n   #   Copyright (c) 2015 PX4 Development Team. All rights reserved.\n   #\n   # Redistribution and use in source and binary forms, with or without\n   # modification, are permitted provided that the following conditions\n   # are met:\n   #\n   # 1. Redistributions of source code must retain the above copyright\n   #    notice, this list of conditions and the following disclaimer.\n   # 2. Redistributions in binary form must reproduce the above copyright\n   #    notice, this list of conditions and the following disclaimer in\n   #    the documentation and/or other materials provided with the\n   #    distribution.\n   # 3. Neither the name PX4 nor the names of its contributors may be\n   #    used to endorse or promote products derived from this software\n   #    without specific prior written permission.\n   #\n   # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n   # \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n   # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS\n   # FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE\n   # COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,\n   # INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,\n   # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS\n   # OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED\n   # AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n   # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN\n   # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n   # POSSIBILITY OF SUCH DAMAGE.\n   #\n   ############################################################################\n   px4_add_module(\n   	MODULE examples__px4_simple_app\n   	MAIN px4_simple_app\n   	STACK_MAIN 2000\n   	SRCS\n   		px4_simple_app.c\n   	DEPENDS\n   	)\n   ```\n\n   `px4_add_module()` 方法从模块描述中构建静态库。\n   - `MODULE` 块是模块的固件唯一名称（按照惯例，模块名称以父目录为前缀，直到 `src`）。\n   - `MAIN` 块列出了模块的入口点，该入口点向 NuttX 注册命令，以便可以从 PX4 shell 或 SITL 控制台调用。\n\n   :::tip\n   `px4_add_module()` 格式在 [PX4-Autopilot/cmake/px4_add_module.cmake](https://github.com/PX4/PX4-Autopilot/blob/main/cmake/px4_add_module.cmake) 中有文档说明。\n   :::\n\n   ::: info\n   如果您在 `px4_add_module` 中指定 `DYNAMIC` 选项，则在 POSIX 平台上会创建 _共享库_ 而不是静态库（这些库可以在不重新编译 PX4 的情况下加载，并且可以作为二进制文件而不是源代码共享给其他人）。\n   您的应用不会成为内置命令，但会生成一个名为 `examples__px4_simple_app.px4mod` 的单独文件。\n   然后您可以通过在运行时使用 `dyn` 命令加载文件来运行您的命令：`dyn ./examples__px4_simple_app.px4mod`\n   :::\n\n1. 创建并打开一个名为 **Kconfig** 的新 _Kconfig_ 定义文件，并定义您的命名符号（参见 [Kconfig 命名约定](../hardware/porting_guide_config.md#px4-kconfig-symbol-naming-convention)）。\n   将以下文本复制进去：\n\n   ```\n   menuconfig EXAMPLES_PX4_SIMPLE_APP\n   	bool \"px4_simple_app\"\n   	default n\n   	---help---\n   		Enable support for px4_simple_app\n   ```\n\n## 构建应用程序/固件\n\n应用程序现在已经完成。\n为了运行它，您首先需要确保它作为 PX4 的一部分被构建。\n应用程序在目标的适当板级 _px4board_ 文件中添加到构建/固件中：\n\n- PX4 SITL（模拟器）：[PX4-Autopilot/boards/px4/sitl/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/sitl/default.px4board)\n- Pixhawk v1/2：[PX4-Autopilot/boards/px4/fmu-v2/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/fmu-v2/default.px4board)\n- Pixracer（px4/fmu-v4）：[PX4-Autopilot/boards/px4/fmu-v4/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/fmu-v4/default.px4board)\n- 其他板的 _px4board_ 文件可以在 [PX4-Autopilot/boards/](https://github.com/PX4/PX4-Autopilot/tree/main/boards) 中找到\n\n要启用应用程序编译到固件中，请在 _px4board_ 文件中添加相应的 Kconfig 键 `CONFIG_EXAMPLES_PX4_SIMPLE_APP=y` 或运行 [boardconfig](../hardware/porting_guide_config.md#px4-menuconfig-setup) `make px4_fmu-v4_default boardconfig`：\n\n```\nexamples  --->\n    [x] PX4 Simple app  ----\n```\n\n::: info\n对于大多数文件，这一行已经存在，因为示例默认包含在固件中。\n:::\n\n使用特定于板的命令构建示例：\n\n- jMAVSim 模拟器：`make px4_sitl_default jmavsim`\n- Pixhawk v1/2：`make px4_fmu-v2_default`（或仅 `make px4_fmu-v2`）\n- Pixhawk v3：`make px4_fmu-v4_default`\n- 其他板：[构建代码](../dev_setup/building_px4.md#building-for-nuttx)\n\n## 测试应用程序（硬件）\n\n### 将固件上传到您的板子\n\n启用上传程序，然后重置板子：\n\n- Pixhawk v1/2：`make px4_fmu-v2_default upload`\n- Pixhawk v3：`make px4_fmu-v4_default upload`\n\n在您重置板子之前，它应该打印许多编译消息，最后显示：\n\n```sh\nLoaded firmware for X,X, waiting for the bootloader...\n```\n\n一旦板子重置并上传，它会打印：\n\n```sh\nErase  : [====================] 100.0%\nProgram: [====================] 100.0%\nVerify : [====================] 100.0%\nRebooting.\n\n[100%] Built target upload\n```\n\n### 连接控制台\n\n现在通过串口或 USB 连接到 [系统控制台](../debug/system_console.md)。\n按下 **ENTER** 将显示 shell 提示符：\n\n```sh\nnsh>\n```\n\n输入 ''help'' 并按 ENTER\n\n```sh\nnsh> help\n  help usage:  help [-v] [<cmd>]\n\n  [           df          kill        mkfifo      ps          sleep\n  ?           echo        losetup     mkrd        pwd         test\n  cat         exec        ls          mh          rm          umount\n  cd          exit        mb          mount       rmdir       unset\n  cp          free        mkdir       mv          set         usleep\n  dd          help        mkfatfs     mw          sh          xd\n\nBuiltin Apps:\n  reboot\n  perf\n  top\n  ..\n  px4_simple_app\n  ..\n  sercon\n  serdis\n```\n\n注意 `px4_simple_app` 现在是可用命令的一部分。\n通过输入 `px4_simple_app` 并按 ENTER 来启动它：\n\n```sh\nnsh> px4_simple_app\nHello Sky!\n```\n\n应用程序现在已经正确注册到系统中，可以扩展以实际执行有用的任务。\n\n## 测试应用程序（SITL）\n\n如果您使用 SITL，_PX4 控制台_ 会自动启动（参见 [构建代码 > 第一次构建（使用模拟器）](../dev_setup/building_px4.md#first-build-using-a-simulator)）。\n与 _nsh 控制台_（参见上一节）一样，您可以输入 `help` 查看内置应用程序列表。\n\n输入 `px4_simple_app` 运行最小应用程序。\n\n```sh\npxh> px4_simple_app\nINFO  [px4_simple_app] Hello Sky!\n```\n\n应用程序现在可以扩展以实际执行有用的任务。\n\n## 订阅传感器数据\n\n要做一些有用的事情，应用程序需要订阅输入并发布输出（例如电机或舵机命令）。\n\n:::tip\nPX4 硬件抽象的好处在这里体现出来！\n无需以任何方式与传感器驱动程序交互，也无需在更新板子或传感器时更新您的应用程序。\n:::\n\n应用程序之间的单个消息通道称为 [topics](../middleware/uorb.md)。在本教程中，我们关注的是 [SensorCombined](https://github.com/PX4/PX4-Autopilot/blob/main/msg/SensorCombined.msg) topic，它包含完整的同步传感器数据。\n\n订阅 topic 很简单：\n\n```cpp\n#include <uORB/topics/sensor_combined.h>\n..\nint sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));\n```\n\n`sensor_sub_fd` 是一个 topic 句柄，可用于非常高效地执行新数据的阻塞等待。\n当前线程会进入睡眠状态，并在有新数据可用时由调度程序自动唤醒，在等待时不消耗任何 CPU 周期。\n为此，我们使用 [poll()](https://pubs.opengroup.org/onlinepubs/007908799/xsh/poll.html) POSIX 系统调用。\n\n将 `poll()` 添加到订阅中看起来像（_伪代码，请查看下面的完整实现_）：\n\n```cpp\n#include <poll.h>\n#include <uORB/topics/sensor_combined.h>\n..\nint sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));\n\n/* 可以用这种技术等待多个 topics，这里只使用一个 */\npx4_pollfd_struct_t fds[] = {\n    { .fd = sensor_sub_fd,   .events = POLLIN },\n};\n\nwhile (true) {\n\t/* 等待 1 个文件描述符的传感器更新 1000 毫秒（1 秒） */\n\tint poll_ret = px4_poll(fds, 1, 1000);\n\t..\n\tif (fds[0].revents & POLLIN) {\n\t\t/* 获得第一个文件描述符的数据 */\n\t\tstruct sensor_combined_s raw;\n\t\t/* 将传感器原始数据复制到本地缓冲区 */\n\t\torb_copy(ORB_ID(sensor_combined), sensor_sub_fd, &raw);\n\t\tPX4_INFO(\"Accelerometer:\\t%8.4f\\t%8.4f\\t%8.4f\",\n\t\t\t\t\t(double)raw.accelerometer_m_s2[0],\n\t\t\t\t\t(double)raw.accelerometer_m_s2[1],\n\t\t\t\t\t(double)raw.accelerometer_m_s2[2]);\n\t}\n}\n```\n\n通过输入以下命令重新编译应用程序：\n\n```sh\nmake\n```\n\n### 测试 uORB 订阅\n\n最后一步是在 nsh shell 中输入以下内容将您的应用程序作为后台进程/任务启动：\n\n```sh\npx4_simple_app &\n```\n\n您的应用程序将在控制台中显示 5 个传感器值，然后退出：\n\n```sh\n[px4_simple_app] Accelerometer:   0.0483          0.0821          0.0332\n[px4_simple_app] Accelerometer:   0.0486          0.0820          0.0336\n[px4_simple_app] Accelerometer:   0.0487          0.0819          0.0327\n[px4_simple_app] Accelerometer:   0.0482          0.0818          0.0323\n[px4_simple_app] Accelerometer:   0.0482          0.0827          0.0331\n[px4_simple_app] Accelerometer:   0.0489          0.0804          0.0328\n```\n\n:::tip\n[完整应用程序的模块模板](../modules/module_template.md) 可用于编写可从命令行控制的后台进程。\n:::\n\n## 发布数据\n\n要使用计算出的输出，下一步是 _发布_ 结果。\n下面我们将展示如何发布 attitude topic。\n\n::: info\n我们选择 `attitude` 是因为我们知道 _mavlink_ 应用会将其转发到地面控制站 - 提供了一种简单的方法来查看结果。\n:::\n\n接口非常简单：初始化要发布的 topic 的 `struct` 并通告该 topic：\n\n```c\n#include <uORB/topics/vehicle_attitude.h>\n..\n/* 通告 attitude topic */\nstruct vehicle_attitude_s att;\nmemset(&att, 0, sizeof(att));\norb_advert_t att_pub_fd = orb_advertise(ORB_ID(vehicle_attitude), &att);\n```\n\n在主循环中，当信息准备就绪时发布：\n\n```c\norb_publish(ORB_ID(vehicle_attitude), att_pub_fd, &att);\n```\n\n## 完整示例代码\n\n[完整示例代码](https://github.com/PX4/PX4-Autopilot/blob/main/src/examples/px4_simple_app/px4_simple_app.c) 现在是：\n\n```c\n/****************************************************************************\n *\n *   Copyright (c) 2012-2019 PX4 Development Team. All rights reserved.\n *\n * Redistribution and use in source and binary forms, with or without\n * * modification, are permitted provided that the following conditions\n * are met:\n *\n * 1. Redistributions of source code must retain the above copyright\n *    notice, this list of conditions and the following disclaimer.\n * 2. Redistributions in binary form must reproduce the above copyright\n *    notice, this list of conditions and the following disclaimer in\n *    the documentation and/or other materials provided with the\n *    distribution.\n * 3. Neither the name PX4 nor the names of its contributors may be\n *    used to endorse or promote products derived from this software\n *    without specific prior written permission.\n *\n * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS\n * \"AS IS\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT\n * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS\n * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE\n * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,\n * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,\n * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS\n * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED\n * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT\n * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN\n * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE\n * POSSIBILITY OF SUCH DAMAGE.\n *\n ****************************************************************************/\n\n/**\n * @file px4_simple_app.c\n * Minimal application example for PX4 autopilot\n *\n * @author Example User <mail@example.com>\n */\n\n#include <px4_platform_common/px4_config.h>\n#include <px4_platform_common/tasks.h>\n#include <px4_platform_common/posix.h>\n#include <unistd.h>\n#include <stdio.h>\n#include <poll.h>\n#include <string.h>\n#include <math.h>\n\n#include <uORB/uORB.h>\n#include <uORB/topics/sensor_combined.h>\n#include <uORB/topics/vehicle_attitude.h>\n\n__EXPORT int px4_simple_app_main(int argc, char *argv[]);\n\nint px4_simple_app_main(int argc, char *argv[])\n{\n\tPX4_INFO(\"Hello Sky!\");\n\n\t/* subscribe to sensor_combined topic */\n\tint sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));\n\t/* limit the update rate to 5 Hz */\n\torb_set_interval(sensor_sub_fd, 200);\n\n\t/* advertise attitude topic */\n\tstruct vehicle_attitude_s att;\n\tmemset(&att, 0, sizeof(att));\n\torb_advert_t att_pub = orb_advertise(ORB_ID(vehicle_attitude), &att);\n\n\t/* one could wait for multiple topics with this technique, just using one here */\n\tpx4_pollfd_struct_t fds[] = {\n\t\t{ .fd = sensor_sub_fd,   .events = POLLIN },\n\t\t/* there could be more file descriptors here, in the form like:\n\t\t * { .fd = other_sub_fd,   .events = POLLIN },\n\t\t */\n\t};\n\n\tint error_counter = 0;\n\n\tfor (int i = 0; i < 5; i++) {\n\t\t/* wait for sensor update of 1 file descriptor for 1000 ms (1 second) */\n\t\tint poll_ret = px4_poll(fds, 1, 1000);\n\n\t\t/* handle the poll result */\n\t\tif (poll_ret == 0) {\n\t\t\t/* this means none of our providers is giving us data */\n\t\t\tPX4_ERR(\"Got no data within a second\");\n\n\t\t} else if (poll_ret < 0) {\n\t\t\t/* this is seriously bad - should be an emergency */\n\t\t\tif (error_counter < 10 || error_counter % 50 == 0) {\n\t\t\t\t/* use a counter to prevent flooding (and slowing us down) */\n\t\t\t\tPX4_ERR(\"ERROR return value from poll(): %d\", poll_ret);\n\t\t\t}\n\n\t\t\terror_counter++;\n\n\t\t} else {\n\n\t\t\tif (fds[0].revents & POLLIN) {\n\t\t\t\t/* obtained data for the first file descriptor */\n\t\t\t\tstruct sensor_combined_s raw;\n\t\t\t\t/* copy sensors raw data into local buffer */\n\t\t\t\torb_copy(ORB_ID(sensor_combined), sensor_sub_fd, &raw);\n\t\t\t\tPX4_INFO(\"Accelerometer:\\t%8.4f\\t%8.4f\\t%8.4f\",\n\t\t\t\t\t (double)raw.accelerometer_m_s2[0],\n\t\t\t\t\t (double)raw.accelerometer_m_s2[1],\n\t\t\t\t\t (double)raw.accelerometer_m_s2[2]);\n\n\t\t\t\t/* set att and publish this information for other apps\n\t\t\t\t the following does not have any meaning, it's just an example\n\t\t\t\t*/\n\t\t\t\tatt.q[0] = raw.accelerometer_m_s2[0];\n\t\t\t\tatt.q[1] = raw.accelerometer_m_s2[1];\n\t\t\t\tatt.q[2] = raw.accelerometer_m_s2[2];\n\n\t\t\t\torb_publish(ORB_ID(vehicle_attitude), att_pub, &att);\n\t\t\t}\n\n\t\t\t/* there could be more file descriptors here, in the form like:\n\t\t\t * if (fds[1..n].revents & POLLIN) {}\n\t\t\t */\n\t\t}\n\t}\n\n\tPX4_INFO(\"exiting\");\n\n\treturn 0;\n}\n```\n\n## 运行完整示例\n\n最后运行您的应用程序：\n\n```sh\npx4_simple_app\n```\n\n如果您启动 _QGroundControl_，您可以在实时图中检查传感器值（[分析 > MAVLink 检查器](https://docs.qgroundcontrol.com/master/en/qgc-user-guide/analyze_view/mavlink_inspector.html)）。\n\n## 总结\n\n本教程涵盖了开发基本 PX4 自动驾驶仪应用程序所需的所有内容。\n请记住，完整的 uORB 消息/topics 列表在 [这里](https://github.com/PX4/PX4-Autopilot/tree/main/msg/) 可用，并且头部文件有很好的文档说明，可作为参考。\n\n更多详细信息以及故障排除/常见陷阱可以在 [uORB](../middleware/uorb.md) 中找到。\n\n下一页将介绍编写具有启动和停止功能的完整应用程序的模板。
+# 第一个应用程序教程（Hello Sky）
+
+本主题介绍如何创建和运行您的第一个机载应用程序。
+它涵盖了在PX4上进行应用程序开发所需的所有基本概念和API。
+
+::: info
+为了简化，省略了更高级的功能，如启动/停止功能和命令行参数。
+这些内容在[应用程序/模块模板](../modules/module_template.md)中介绍。
+:::
+
+## 先决条件
+
+您需要满足以下条件：
+
+- [PX4 SITL仿真器](../simulation/index.md) _或者_ [PX4兼容的飞控](../flight_controller/index.md)。
+- 针对目标平台的[PX4开发工具链](../dev_setup/dev_env.md)。
+- 从Github[下载PX4源代码](../dev_setup/building_px4.md#download-the-px4-source-code)
+
+源代码[PX4-Autopilot/src/examples/px4_simple_app](https://github.com/PX4/PX4-Autopilot/tree/main/src/examples/px4_simple_app)目录包含了本教程的完整版本，如果遇到困难可以参考。
+
+- 重命名（或删除）**px4_simple_app**目录。
+
+## 最小应用程序
+
+在这一部分，我们创建一个_最小应用程序_，它只是打印出`Hello Sky!`。
+这包括一个_C_文件和一个_cmake_定义（告诉工具链如何构建应用程序）。
+
+1. 创建一个新目录**PX4-Autopilot/src/examples/px4_simple_app**。
+1. 在该目录中创建一个名为**px4_simple_app.c**的新C文件：
+   - 将默认头部复制到页面顶部。
+     这应该出现在所有贡献的文件中！
+
+     ```c
+     /****************************************************************************
+      *
+      *   Copyright (c) 2012-2022 PX4 Development Team. All rights reserved.
+      *
+      * Redistribution and use in source and binary forms, with or without
+      * modification, are permitted provided that the following conditions
+      * are met:
+      *
+      * 1. Redistributions of source code must retain the above copyright
+      *    notice, this list of conditions and the following disclaimer.
+      * 2. Redistributions in binary form must reproduce the above copyright
+      *    notice, this list of conditions and the following disclaimer in
+      *    the documentation and/or other materials provided with the
+      *    distribution.
+      * 3. Neither the name PX4 nor the names of its contributors may be
+      *    used to endorse or promote products derived from this software
+      *    without specific prior written permission.
+      *
+      * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+      * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+      * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+      * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+      * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+      * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+      * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+      * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+      * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+      * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+      * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+      * POSSIBILITY OF SUCH DAMAGE.
+      *
+      ****************************************************************************/
+     ```
+
+   - 将以下代码复制到默认头部下方。
+     这应该出现在所有贡献的文件中！
+
+     ```c
+     /**
+      * @file px4_simple_app.c
+      * PX4自动驾驶仪的最小应用程序示例
+      *
+      * @author Example User <mail@example.com>
+      */
+
+     #include <px4_platform_common/log.h>
+
+     __EXPORT int px4_simple_app_main(int argc, char *argv[]);
+
+     int px4_simple_app_main(int argc, char *argv[])
+     {
+     	PX4_INFO("Hello Sky!");
+     	return OK;
+     }
+     ```
+
+     :::tip
+     主函数必须命名为`<module_name>_main`并从模块中导出，如图所示。
+     :::
+
+     :::tip
+     `PX4_INFO`相当于PX4 shell的`printf`（从**px4_platform_common/log.h**包含）。
+     有不同的日志级别：`PX4_INFO`、`PX4_WARN`、`PX4_ERR`、`PX4_DEBUG`。
+     警告和错误还会被添加到[ULog](../dev_log/ulog_file_format.md)并显示在[Flight Review](https://logs.px4.io/)上。
+     :::
+
+1. 创建并打开一个名为**CMakeLists.txt**的新_cmake_定义文件。
+   复制以下文本：
+
+   ```cmake
+   ############################################################################
+   #
+   #   Copyright (c) 2015 PX4 Development Team. All rights reserved.
+   #
+   # Redistribution and use in source and binary forms, with or without
+   # modification, are permitted provided that the following conditions
+   # are met:
+   #
+   # 1. Redistributions of source code must retain the above copyright
+   #    notice, this list of conditions and the following disclaimer.
+   # 2. Redistributions in binary form must reproduce the above copyright
+   #    notice, this list of conditions and the following disclaimer in
+   #    the documentation and/or other materials provided with the
+   #    distribution.
+   # 3. Neither the name PX4 nor the names of its contributors may be
+   #    used to endorse or promote products derived from this software
+   #    without specific prior written permission.
+   #
+   # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+   # "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   # LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+   # FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+   # COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+   # INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+   # BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+   # OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+   # AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+   # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+   # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+   # POSSIBILITY OF SUCH DAMAGE.
+   #
+   ############################################################################
+   px4_add_module(
+   	MODULE examples__px4_simple_app
+   	MAIN px4_simple_app
+   	STACK_MAIN 2000
+   	SRCS
+   		px4_simple_app.c
+   	DEPENDS
+   	)
+   ```
+
+   `px4_add_module()`方法从模块描述构建静态库。
+   - `MODULE`块是模块的固件唯一名称（按约定，模块名称以父目录为前缀，直到`src`）。
+   - `MAIN`块列出模块的入口点，它向NuttX注册命令，以便可以从PX4 shell或SITL控制台调用。
+
+   :::tip
+   `px4_add_module()`格式记录在[PX4-Autopilot/cmake/px4_add_module.cmake](https://github.com/PX4/PX4-Autopilot/blob/main/cmake/px4_add_module.cmake)中。 <!-- NEED px4_version -->
+   :::
+
+   ::: info
+   如果您将`DYNAMIC`指定为`px4_add_module`的选项，则在POSIX平台上创建_共享库_而不是静态库（这些库可以在不重新编译PX4的情况下加载，并作为二进制文件而不是源代码与他人共享）。
+   您的应用程序不会成为内置命令，而是在名为`examples__px4_simple_app.px4mod`的单独文件中结束。
+   然后，您可以使用`dyn`命令在运行时加载文件来运行命令：`dyn ./examples__px4_simple_app.px4mod`
+   :::
+
+1. 创建并打开一个名为**Kconfig**的新_Kconfig_定义文件，并定义用于命名的符号（参见[Kconfig命名约定](../hardware/porting_guide_config.md#px4-kconfig-symbol-naming-convention)）。
+   复制以下文本：
+
+   ```
+   menuconfig EXAMPLES_PX4_SIMPLE_APP
+   	bool "px4_simple_app"
+   	default n
+   	---help---
+   		Enable support for px4_simple_app
+   ```
+
+## 构建应用程序/固件
+
+应用程序现在已经完成。
+为了运行它，您首先需要确保它作为PX4的一部分构建。
+应用程序在相应的板级_px4board_文件中添加到构建/固件中：
+
+- PX4 SITL（仿真器）：[PX4-Autopilot/boards/px4/sitl/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/sitl/default.px4board)
+- Pixhawk v1/2：[PX4-Autopilot/boards/px4/fmu-v2/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/fmu-v2/default.px4board)
+- Pixracer（px4/fmu-v4）：[PX4-Autopilot/boards/px4/fmu-v4/default.px4board](https://github.com/PX4/PX4-Autopilot/blob/main/boards/px4/fmu-v4/default.px4board)
+- 其他板子的_px4board_文件可以在[PX4-Autopilot/boards/](https://github.com/PX4/PX4-Autopilot/tree/main/boards)中找到
+
+要启用将应用程序编译到固件中，请在_px4board_文件中添加相应的Kconfig键`CONFIG_EXAMPLES_PX4_SIMPLE_APP=y`，或运行[boardconfig](../hardware/porting_guide_config.md#px4-menuconfig-setup) `make px4_fmu-v4_default boardconfig`：
+
+```
+examples  --->
+    [x] PX4 Simple app  ----
+```
+
+::: info
+对于大多数文件，该行已经存在，因为示例默认包含在固件中。
+:::
+
+使用板子特定的命令构建示例：
+
+- jMAVSim仿真器：`make px4_sitl_default jmavsim`
+- Pixhawk v1/2：`make px4_fmu-v2_default`（或只是`make px4_fmu-v2`）
+- Pixhawk v3：`make px4_fmu-v4_default`
+- 其他板子：[构建代码](../dev_setup/building_px4.md#building-for-nuttx)
+
+## 测试应用程序（硬件）
+
+### 将固件上传到您的板子
+
+启用上传器，然后重置板子：
+
+- Pixhawk v1/2：`make px4_fmu-v2_default upload`
+- Pixhawk v3：`make px4_fmu-v4_default upload`
+
+在您重置板子之前，它应该打印出一些编译消息，最后显示：
+
+```sh
+Loaded firmware for X,X, waiting for the bootloader...
+```
+
+板子重置并上传后，它会打印：
+
+```sh
+Erase  : [====================] 100.0%
+Program: [====================] 100.0%
+Verify : [====================] 100.0%
+Rebooting.
+
+[100%] Built target upload
+```
+
+### 连接控制台
+
+现在通过串口或USB连接到[系统控制台](../debug/system_console.md)。
+按**ENTER**会显示shell提示符：
+
+```sh
+nsh>
+```
+
+输入'help'并按ENTER
+
+```sh
+nsh> help
+  help usage:  help [-v] [<cmd>]
+
+  [           df          kill        mkfifo      ps          sleep
+  ?           echo        losetup     mkrd        pwd         test
+  cat         exec        ls          mh          rm          umount
+  cd          exit        mb          mount       rmdir       unset
+  cp          free        mkdir       mv          set         usleep
+  dd          help        mkfatfs     mw          sh          xd
+
+Builtin Apps:
+  reboot
+  perf
+  top
+  ..
+  px4_simple_app
+  ..
+  sercon
+  serdis
+```
+
+注意`px4_simple_app`现在是可用命令的一部分。
+通过输入`px4_simple_app`并按ENTER来启动它：
+
+```sh
+nsh> px4_simple_app
+Hello Sky!
+```
+
+应用程序现在已正确注册到系统中，可以扩展为执行有用的任务。
+
+## 测试应用程序（SITL）
+
+如果您使用SITL，_PX4控制台_会自动启动（参见[构建代码 > 第一次构建（使用仿真器）](../dev_setup/building_px4.md#first-build-using-a-simulator)）。
+与_nsh控制台_一样（参见上一节），您可以输入`help`来查看内置应用程序列表。
+
+输入`px4_simple_app`来运行最小应用程序。
+
+```sh
+pxh> px4_simple_app
+INFO  [px4_simple_app] Hello Sky!
+```
+
+应用程序现在可以扩展为实际执行有用的任务。
+
+## 订阅传感器数据
+
+要做一些有用的事情，应用程序需要订阅输入并发布输出（例如电机或舵机命令）。
+
+:::tip
+PX4硬件抽象的优势在这里发挥作用！
+无需以任何方式与传感器驱动程序交互，如果板子或传感器更新，也无需更新您的应用程序。
+:::
+
+应用程序之间的单个消息通道称为[主题](../middleware/uorb.md)。在本教程中，我们对[SensorCombined](https://github.com/PX4/PX4-Autopilot/blob/main/msg/SensorCombined.msg)主题感兴趣，它保存整个系统的同步传感器数据。
+
+订阅主题很简单：
+
+```cpp
+#include <uORB/topics/sensor_combined.h>
+..
+int sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));
+```
+
+`sensor_sub_fd`是一个主题句柄，可用于非常高效地执行阻塞等待新数据。
+当前线程会休眠，一旦有新数据可用，调度器会自动唤醒它，等待时不消耗任何CPU周期。
+为此，我们使用[poll()](https://pubs.opengroup.org/onlinepubs/007908799/xsh/poll.html) POSIX系统调用。
+
+在订阅中添加`poll()`看起来像这样（_伪代码，完整实现见下文_）：
+
+```cpp
+#include <poll.h>
+#include <uORB/topics/sensor_combined.h>
+..
+int sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));
+
+/* 可以使用这种技术等待多个主题，这里只使用一个 */
+px4_pollfd_struct_t fds[] = {
+    { .fd = sensor_sub_fd,   .events = POLLIN },
+};
+
+while (true) {
+	/* 等待1个文件描述符的传感器更新1000毫秒（1秒） */
+	int poll_ret = px4_poll(fds, 1, 1000);
+	..
+	if (fds[0].revents & POLLIN) {
+		/* 获得第一个文件描述符的数据 */
+		struct sensor_combined_s raw;
+		/* 将传感器原始数据复制到本地缓冲区 */
+		orb_copy(ORB_ID(sensor_combined), sensor_sub_fd, &raw);
+		PX4_INFO("Accelerometer:\t%8.4f\t%8.4f\t%8.4f",
+					(double)raw.accelerometer_m_s2[0],
+					(double)raw.accelerometer_m_s2[1],
+					(double)raw.accelerometer_m_s2[2]);
+	}
+}
+```
+
+通过输入以下命令重新编译应用程序：
+
+```sh
+make
+```
+
+### 测试uORB订阅
+
+最后一步是通过在nsh shell中输入以下命令将您的应用程序作为后台进程/任务启动：
+
+```sh
+px4_simple_app &
+```
+
+您的应用程序将在控制台中显示5个传感器值，然后退出：
+
+```sh
+[px4_simple_app] Accelerometer:   0.0483          0.0821          0.0332
+[px4_simple_app] Accelerometer:   0.0486          0.0820          0.0336
+[px4_simple_app] Accelerometer:   0.0487          0.0819          0.0327
+[px4_simple_app] Accelerometer:   0.0482          0.0818          0.0323
+[px4_simple_app] Accelerometer:   0.0482          0.0827          0.0331
+[px4_simple_app] Accelerometer:   0.0489          0.0804          0.0328
+```
+
+:::tip
+[完整应用程序的模块模板](../modules/module_template.md)可用于编写可从命令行控制的后台进程。
+:::
+
+## 发布数据
+
+为了使用计算的输出，下一步是_发布_结果。
+下面我们展示如何发布姿态主题。
+
+::: info
+我们选择`attitude`是因为我们知道_mavlink_应用程序将其转发到地面控制站 - 提供了一种查看结果的简单方法。
+:::
+
+接口非常简单：初始化要发布的主题的`struct`并通告主题：
+
+```c
+#include <uORB/topics/vehicle_attitude.h>
+..
+/* 通告姿态主题 */
+struct vehicle_attitude_s att;
+memset(&att, 0, sizeof(att));
+orb_advert_t att_pub_fd = orb_advertise(ORB_ID(vehicle_attitude), &att);
+```
+
+在主循环中，当信息准备好时发布：
+
+```c
+orb_publish(ORB_ID(vehicle_attitude), att_pub_fd, &att);
+```
+
+## 完整示例代码
+
+[完整示例代码](https://github.com/PX4/PX4-Autopilot/blob/main/src/examples/px4_simple_app/px4_simple_app.c)现在是：
+
+```c
+/****************************************************************************
+ *
+ *   Copyright (c) 2012-2019 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
+/**
+ * @file px4_simple_app.c
+ * PX4自动驾驶仪的最小应用程序示例
+ *
+ * @author Example User <mail@example.com>
+ */
+
+#include <px4_platform_common/px4_config.h>
+#include <px4_platform_common/tasks.h>
+#include <px4_platform_common/posix.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <poll.h>
+#include <string.h>
+#include <math.h>
+
+#include <uORB/uORB.h>
+#include <uORB/topics/sensor_combined.h>
+#include <uORB/topics/vehicle_attitude.h>
+
+__EXPORT int px4_simple_app_main(int argc, char *argv[]);
+
+int px4_simple_app_main(int argc, char *argv[])
+{
+	PX4_INFO("Hello Sky!");
+
+	/* 订阅sensor_combined主题 */
+	int sensor_sub_fd = orb_subscribe(ORB_ID(sensor_combined));
+	/* 限制更新率为5 Hz */
+	orb_set_interval(sensor_sub_fd, 200);
+
+	/* 通告姿态主题 */
+	struct vehicle_attitude_s att;
+	memset(&att, 0, sizeof(att));
+	orb_advert_t att_pub = orb_advertise(ORB_ID(vehicle_attitude), &att);
+
+	/* 可以使用这种技术等待多个主题，这里只使用一个 */
+	px4_pollfd_struct_t fds[] = {
+		{ .fd = sensor_sub_fd,   .events = POLLIN },
+		/* 这里可以有更多文件描述符，形式如下：
+		 * { .fd = other_sub_fd,   .events = POLLIN },
+		 */
+	};
+
+	int error_counter = 0;
+
+	for (int i = 0; i < 5; i++) {
+		/* 等待1个文件描述符的传感器更新1000毫秒（1秒） */
+		int poll_ret = px4_poll(fds, 1, 1000);
+
+		/* 处理poll结果 */
+		if (poll_ret == 0) {
+			/* 这意味着我们的提供者都没有给我们数据 */
+			PX4_ERR("Got no data within a second");
+
+		} else if (poll_ret < 0) {
+			/* 这是严重错误 - 应该是紧急情况 */
+			if (error_counter < 10 || error_counter % 50 == 0) {
+				/* 使用计数器防止泛洪（并减慢我们的速度） */
+				PX4_ERR("ERROR return value from poll(): %d", poll_ret);
+			}
+
+			error_counter++;
+
+		} else {
+
+			if (fds[0].revents & POLLIN) {
+				/* 获得第一个文件描述符的数据 */
+				struct sensor_combined_s raw;
+				/* 将传感器原始数据复制到本地缓冲区 */
+				orb_copy(ORB_ID(sensor_combined), sensor_sub_fd, &raw);
+				PX4_INFO("Accelerometer:\t%8.4f\t%8.4f\t%8.4f",
+					 (double)raw.accelerometer_m_s2[0],
+					 (double)raw.accelerometer_m_s2[1],
+					 (double)raw.accelerometer_m_s2[2]);
+
+				/* 设置att并发布此信息给其他应用程序
+				 以下没有任何意义，只是一个示例
+				*/
+				att.q[0] = raw.accelerometer_m_s2[0];
+				att.q[1] = raw.accelerometer_m_s2[1];
+				att.q[2] = raw.accelerometer_m_s2[2];
+
+				orb_publish(ORB_ID(vehicle_attitude), att_pub, &att);
+			}
+
+			/* 这里可以有更多文件描述符，形式如下：
+			 * if (fds[1..n].revents & POLLIN) {}
+			 */
+		}
+	}
+
+	PX4_INFO("exiting");
+
+	return 0;
+}
+```
+
+## 运行完整示例
+
+最后运行您的应用程序：
+
+```sh
+px4_simple_app
+```
+
+如果您启动_QGroundControl_，您可以在实时图表中检查传感器值（[分析 > MAVLink检查器](https://docs.qgroundcontrol.com/master/en/qgc-user-guide/analyze_view/mavlink_inspector.html)）。
+
+## 总结
+
+本教程涵盖了开发基本PX4自动驾驶仪应用程序所需的所有内容。
+请记住，完整的uORB消息/主题列表[在此可用](https://github.com/PX4/PX4-Autopilot/tree/main/msg/)，头文件有很好的文档记录并作为参考。
+
+更多信息和故障排除/常见陷阱可以在这里找到：[uORB](../middleware/uorb.md)。
+
+下一页提供了一个编写具有启动和停止功能的完整应用程序的模板。
