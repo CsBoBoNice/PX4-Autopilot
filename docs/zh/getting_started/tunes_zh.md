@@ -1,0 +1,177 @@
+# 音调含义（Pixhawk 系列）
+
+[Pixhawk 系列飞行控制器](../flight_controller/pixhawk_series.md)使用[蜂鸣器](../getting_started/px4_basic_concepts.md#buzzer)的声音音调和[LED](../getting_started/led_meanings.md)的颜色/序列来指示飞行器状态和事件（例如解锁成功和失败、低电量警告）。
+
+下面列出了标准声音集。
+
+::: info
+**开发人员：**音调在 [/lib/tunes/tune_definition.desc](https://github.com/PX4/PX4-Autopilot/blob/main/src/lib/tunes/tune_definition.desc) 中定义，可以使用 [tune-control](../modules/modules_system.md#tune-control) 模块进行测试。
+您可以使用字符串 `TUNE_ID_name`（例如 `TUNE_ID_PARACHUTE_RELEASE)` 搜索音调使用。
+:::
+
+## 启动/开机
+
+这些音调在启动序列期间播放。
+<!-- https://github.com/PX4/PX4-Autopilot/blob/main/ROMFS/px4fmu_common/init.d/rcS -->
+
+#### 启动音调
+
+<audio controls><source src="../../assets/tunes/1_startup_tone.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- tune: 1, STARTUP -->
+
+- microSD 卡成功挂载（启动期间）。
+
+#### 错误音调
+
+<audio controls><source src="../../assets/tunes/2_error_tune.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- tune 2, ERROR_TUNE -->
+
+- 硬故障导致系统重启。
+- 系统设置为使用 PX4IO 但无 IO 存在。
+- UAVCAN 已启用但驱动程序无法启动。
+- SITL/HITL 已启用但 *pwm_out_sim* 驱动程序无法启动。
+- FMU 启动失败。
+
+#### 创建文件系统
+
+<audio controls><source src="../../assets/tunes/16_make_fs.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 14, SD_INIT (previously tune 16) -->
+
+- 格式化 microSD 卡。
+- 挂载失败（如果格式化成功，启动序列将尝试再次挂载）。
+- 无 microSD 卡。
+
+#### 格式化失败
+
+<audio controls><source src="../../assets/tunes/17_format_failed.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 15, SD_ERROR (previously 17) -->
+
+- 格式化 microSD 卡失败（在之前尝试挂载卡之后）。
+
+#### 编程 PX4IO
+
+<audio controls><source src="../../assets/tunes/18_program_px4io.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 16, PROG_PX4IO (previously id 18) -->
+
+- 开始编程 PX4IO。
+
+#### 编程 PX4IO 成功
+
+<audio controls><source src="../../assets/tunes/19_program_px4io_success.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 17, PROG_PX4IO_OK (previously tune 19) -->
+
+- PX4IO 编程成功。
+
+#### 编程 PX4IO 失败
+
+<audio controls><source src="../../assets/tunes/20_program_px4io_fail.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 18, PROG_PX4IO_ERR (previously tune 20) -->
+
+- PX4IO 编程失败。
+- PX4IO 无法启动。
+- 未找到 AUX 混控器。
+
+## 操作
+
+这些音调在正常操作期间发出。
+
+<a id="error_tune_operational"></a>
+#### 错误音调
+
+<audio controls><source src="../../assets/tunes/2_error_tune.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 2, ERROR_TUNE -->
+
+- RC 丢失
+
+#### 正面通知音调
+
+<audio controls><source src="../../assets/tunes/3_notify_positive_tone.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 3, NOTIFY_POSITIVE -->
+
+- 校准成功。
+- 模式变更成功。
+- 命令被接受（例如来自 MAVLink 命令协议）。
+- 安全开关关闭（飞行器可以解锁）。
+
+#### 中性通知音调
+
+<audio controls><source src="../../assets/tunes/4_notify_neutral_tone.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 4, NOTIFY_NEUTRAL -->
+
+- 任务有效且无警告。
+- 空速校准：提供更多气压，或校准完成。
+- 安全开关打开/锁定（可安全接近飞行器）。
+
+#### 负面通知音调
+
+<audio controls><source src="../../assets/tunes/5_notify_negative_tone.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 5, NOTIFY_NEGATIVE -->
+
+- 校准失败。
+- 校准已完成。
+- 任务无效。
+- 命令被拒绝、失败、暂时拒绝（例如来自 MAVLink 命令协议）。
+- 解锁/锁定转换被拒绝（例如飞行前检查失败、安全未禁用、系统不在手动模式）。
+- 拒绝模式转换。
+
+#### 解锁警告
+
+<audio controls><source src="../../assets/tunes/6_arming_warning.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 6, ARMING_WARNING -->
+
+- 飞行器现已解锁。
+
+#### 解锁失败音调
+
+<audio controls><source src="../../assets/tunes/10_arming_failure_tune.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 10, ARMING_FAILURE -->
+
+- 解锁失败
+
+#### 电池警告慢
+
+<audio controls><source src="../../assets/tunes/7_battery_warning_slow.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 7,  BATTERY_WARNING_SLOW -->
+
+- 低电量警告（[故障安全](../config/safety.md#battery-level-failsafe)）。
+
+#### 电池警告快
+
+<audio controls><source src="../../assets/tunes/8_battery_warning_fast.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 8, BATTERY_WARNING_FAST -->
+
+- 严重低电量警告（[故障安全](../config/safety.md#battery-level-failsafe)）。
+
+#### GPS 警告慢
+
+<audio controls><source src="../../assets/tunes/9_gps_warning_slow.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 9,  GPS_WARNING -->
+
+#### 降落伞释放
+
+<audio controls><source src="../../assets/tunes/11_parachute_release.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 11, PARACHUTE_RELEASE -->
+
+- 降落伞释放触发。
+
+#### 单次哔哔声
+
+<audio controls><source src="../../assets/tunes/14_single_beep.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 12, SINGLE_BEEP (previously was id 14 -->
+
+- 磁力计/指南针校准：通知用户开始旋转飞行器。
+
+#### 原点设置音调
+
+<audio controls><source src="../../assets/tunes/15_home_set_tune.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+<!-- 13, HOME_SET (previously id 15) -->
+
+- 原点位置初始化（仅第一次）。
+
+#### 关机音调
+
+<audio controls><source src="../../assets/tunes/power_off_tune.mp3" type="audio/mpeg">您的浏览器不支持音频元素。</audio>
+
+- 飞行器关机。
+
+<!--19, POWER_OFF -->
